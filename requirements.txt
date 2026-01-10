@@ -1,0 +1,8 @@
+pandas
+requests
+openpyxl
+lxml
+xlsxwriter
+gspread
+google-auth
+google-api-python-client

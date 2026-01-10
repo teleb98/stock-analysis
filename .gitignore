@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+service_account.json
+stock_data_raw.csv
+Stock_Analysis_*.xlsx
