@@ -71,7 +71,7 @@ def get_financial_data(code, name, session):
 def get_tickers_from_naver():
     tickers = []
     # KOSPI (0) & KOSDAQ (1)
-    markets = [(0, 40), (1, 40)] 
+    markets = [(0, 50), (1, 50)] # Fetch all pages (Approx 20 for KOSPI, 35 for KOSDAQ) 
     
     print("Crawling tickers & prices from Naver Ranking...")
     session = requests.Session()
@@ -251,7 +251,12 @@ def main():
                 
                 sorted_dates.sort() # Ensure sorted
                 
-                today_md = datetime.now().strftime("%m%d") # 0110
+                if not sorted_dates:
+                    continue
+
+                # Use the most recent date from data as the reference date (MM/DD)
+                last_date = sorted_dates[-1] # YYYYMMDD
+                today_md = last_date[4:] # MMDD
                 
                 target_years = range(2020, 2027)
                 for y in target_years:
@@ -288,8 +293,11 @@ def main():
 
     print("\nSaving raw data...")
     raw_df = pd.DataFrame(records)
-    raw_df.to_csv("stock_data_raw.csv", index=False, encoding='utf-8-sig')
-    print("Done. Saved to stock_data_raw.csv")
+    # Save to script directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, "stock_data_raw.csv")
+    raw_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+    print(f"Done. Saved to {csv_path}")
 
 if __name__ == "__main__":
     main()

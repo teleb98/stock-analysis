@@ -12,6 +12,12 @@ TARGET_FOLDER_NAME = "Invest"
 CAGR_THRESHOLD = 0.12 # 12%
 
 def get_credentials(json_keyfile):
+    args = []
+    # If json_keyfile is relative, make it relative to script dir
+    if not os.path.isabs(json_keyfile):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        json_keyfile = os.path.join(script_dir, json_keyfile)
+
     if not os.path.exists(json_keyfile):
         return None
     scopes = [
@@ -42,11 +48,15 @@ def calculate_cagr(start_val, end_val, years):
 
 def analyze():
     print("Loading raw data...")
-    if not os.path.exists("stock_data_raw.csv"):
-        print("stock_data_raw.csv not found. Run fetch_data.py first.")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, "stock_data_raw.csv")
+    
+    if not os.path.exists(csv_path):
+        print(f"File not found: {csv_path}")
+        print("Run fetch_data.py first.")
         return
 
-    df = pd.read_csv("stock_data_raw.csv", dtype={'Code': str, 'Year': str})
+    df = pd.read_csv(csv_path, dtype={'Code': str, 'Year': str})
     
     # 1. Pivot
     df_pivot = df.pivot_table(index=['Code', 'Name', 'Metric'], columns='Year', values='Value', aggfunc='first')
@@ -70,7 +80,7 @@ def analyze():
                 group[y] = np.nan
         
         # Calculate PRICE row
-        # Correction: User wants PRICE for EACH year to be the price on "Jan 10" of that year.
+        # Correction: 최근 날짜로 마지막해의 가격을 사용, 다른 년도는 해당 날짜와 동일한 날짜의 가격을 사용
         # We now have 'FixedDatePrice' metric from fetch_data.py covering 2020-2026.
         
         price_vals = pd.Series(index=years, dtype='float64')
@@ -204,8 +214,9 @@ def analyze():
     today_str = datetime.datetime.now().strftime('%Y%m%d')
     filename = f"Stock_Analysis_{today_str}.xlsx"
     
-    print(f"Saving to {filename}...")
-    final_df.to_excel(filename, index=False)
+    output_path = os.path.join(script_dir, filename)
+    print(f"Saving to {output_path}...")
+    final_df.to_excel(output_path, index=False)
     
     # --- GOOGLE SHEETS UPLOAD ---
     creds = get_credentials("service_account.json")

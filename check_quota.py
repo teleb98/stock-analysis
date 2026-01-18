@@ -3,9 +3,11 @@ from googleapiclient.discovery import build
 import os
 
 def check_quota():
-    json_keyfile = 'service_account.json'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_keyfile = os.path.join(script_dir, 'service_account.json')
+    
     if not os.path.exists(json_keyfile):
-        print("service_account.json not found.")
+        print(f"service_account.json not found at {json_keyfile}")
         return
 
     creds = Credentials.from_service_account_file(
